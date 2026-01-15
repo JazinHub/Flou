@@ -25,9 +25,11 @@ body{
   color:var(--white);
 }
 
+/* HEADER BLANCO */
 header{
-  background:var(--blue-mid);
-  padding:10px 0 0;
+  background:var(--white);
+  color:var(--blue-dark);
+  padding:15px 0 0;
   text-align:left;
   position:relative;
 }
@@ -39,23 +41,26 @@ header .inner-header{
   padding:0 30px;
 }
 
+/* LOGO MAS GRANDE SIN RECORTE */
 header img{
-  height:60px;
+  height:72px;
 }
 
 header h1{
   margin-left:10px;
   font-weight:700;
-  font-size:28px;
+  font-size:30px;
 }
 
+/* TWO WAVES FLUSH SIDE-BY-SIDE */
 #wave1,#wave2{
-  width:100%;
   display:block;
+  width:100%;
   height:80px;
-  margin-top:-10px;
+  margin-top:-5px;
 }
 
+/* CATEGORIES remains SAME */
 .categories{
   background:var(--blue-dark);
   border-radius:12px;
@@ -63,6 +68,7 @@ header h1{
   text-align:center;
   font-weight:500;
   min-width:140px;
+  color:var(--white);
 }
 
 .categories select{
@@ -74,6 +80,7 @@ header h1{
   font-size:14px;
 }
 
+/* MAIN LAYOUT */
 .container{
   max-width:1200px;
   margin:auto;
@@ -81,6 +88,9 @@ header h1{
   text-align:center;
 }
 
+h2{margin-top:0;font-size:28px;font-weight:600;}
+
+/* SLIDER */
 .slider{
   position:relative;
   display:flex;
@@ -88,20 +98,24 @@ header h1{
   justify-content:center;
 }
 
+/* CLEAN CHART FRAME */
 .chart-frame{
   background:var(--white);
   border-radius:30px;
-  width:80%;
+  width:85%;
   padding:30px;
   box-shadow:0 8px 25px rgba(0,0,0,0.25);
   border:6px solid var(--blue-dark);
 }
 
+/* RESPONSIVE CHART CANVAS */
 .chart-frame canvas{
-  width:100% !important;
-  height:350px !important;
+  width:100%!important;
+  height:auto!important;
+  max-height:400px!important;
 }
 
+/* NAV BUTTONS */
 .btn{
   background:var(--blue-dark);
   border-radius:50%;
@@ -114,6 +128,7 @@ header h1{
   font-size:28px;
   user-select:none;
   margin:0 25px;
+  color:white;
 }
 .btn:hover{
   background:var(--blue-mid);
@@ -128,6 +143,7 @@ header h1{
       <img src="./flouLogo.png" alt="Flou Logo">
       <h1>Dashboard</h1>
     </div>
+
     <div class="categories">
       Categories
       <select id="filterSelect">
@@ -136,15 +152,15 @@ header h1{
     </div>
   </div>
 
-  <svg id="wave1" viewBox="0 0 1440 320">
+  <!-- WAVES FULL WIDTH -->
+  <svg id="wave1" viewBox="0 0 1440 320" preserveAspectRatio="none">
     <path fill="#45a9ff" fill-opacity="1"
-     d="M0,96L48,128C96,160,192,224,288,234.7C384,245,480,203,576,192C672,181,768,203,864,218.7C960,235,1056,245,1152,245.3C1248,245,1344,235,1392,229.3L1440,224V320H0Z">
-    </path>
+     d="M0,96L48,128C96,160,192,224,288,234.7C384,245,480,203,576,192C672,181,768,203,864,218.7C960,235,1056,245,1152,245.3C1248,245,1344,235,1392,229.3L1440,224V320H0Z"></path>
   </svg>
-  <svg id="wave2" viewBox="0 0 1440 320">
+
+  <svg id="wave2" viewBox="0 0 1440 320" preserveAspectRatio="none">
     <path fill="#45a9ff" fill-opacity="0.6"
-     d="M0,160L60,144C120,128,240,96,360,74.7C480,53,600,43,720,64C840,85,960,139,1080,165.3C1200,192,1320,192,1380,192L1440,192V320H0Z">
-    </path>
+     d="M0,160L60,144C120,128,240,96,360,74.7C480,53,600,43,720,64C840,85,960,139,1080,165.3C1200,192,1320,192,1380,192L1440,192V320H0Z"></path>
   </svg>
 </header>
 
@@ -153,20 +169,17 @@ header h1{
 
   <div class="slider">
     <div class="btn" id="prev">❮</div>
-
     <div class="chart-frame">
       <canvas id="chart1"></canvas>
     </div>
-
     <div class="btn" id="next">❯</div>
   </div>
 </div>
 
-<!-- LIBS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-const names =["Ventas por Mes","Ventas por Categoría","Ventas por Producto"];
+const names=["Ventas por Mes","Ventas por Categoría","Ventas por Producto"];
 let chartIndex=0;
 let raw=[];
 
@@ -219,8 +232,15 @@ function drawMonthly(d){
   d.forEach(r=>m[r.Mes]=(m[r.Mes]||0)+r.Ventas);
   chart=new Chart(chart1,{
     type:'line',
-    data:{labels:Object.keys(m),
-      datasets:[{data:Object.values(m),borderColor:'#0b4da1',fill:true,backgroundColor:'rgba(15,125,232,0.2)',tension:.45}]
+    data:{
+      labels:Object.keys(m),
+      datasets:[{
+        data:Object.values(m),
+        borderColor:'#0b4da1',
+        backgroundColor:'rgba(15,125,232,0.2)',
+        fill:true,
+        tension:.45
+      }]
     }
   });
 }
@@ -230,8 +250,12 @@ function drawCat(d){
   d.forEach(r=>c[r.Categoria]=(c[r.Categoria]||0)+r.Ventas);
   chart=new Chart(chart1,{
     type:'bar',
-    data:{labels:Object.keys(c),
-      datasets:[{data:Object.values(c),backgroundColor:'#0b4da1'}]
+    data:{
+      labels:Object.keys(c),
+      datasets:[{
+        data:Object.values(c),
+        backgroundColor:'#0b4da1'
+      }]
     }
   });
 }
@@ -241,9 +265,14 @@ function drawProd(d){
   d.forEach(r=>p[r.Producto]=(p[r.Producto]||0)+r.Ventas);
   chart=new Chart(chart1,{
     type:'pie',
-    data:{labels:Object.keys(p),
-      datasets:[{data:Object.values(p),
-        backgroundColor:['#0b4da1','#0f7de8','#6fb6ff','#4a95e6','#1c65b8','#3e89db','#88c8ff','#2a78c9','#0d57ac','#56a3ec']
+    data:{
+      labels:Object.keys(p),
+      datasets:[{
+        data:Object.values(p),
+        backgroundColor:[
+          '#0b4da1','#0f7de8','#6fb6ff','#4a95e6','#1c65b8',
+          '#3e89db','#88c8ff','#2a78c9','#0d57ac','#56a3ec'
+        ]
       }]
     }
   });
