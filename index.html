@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flou Dashboard</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Poppins, Arial, sans-serif;
+        background: #f2f8ff;
+        color: #052c56;
+    }
+
+    header {
+        background: linear-gradient(135deg, #0b4da1, #0f7de8);
+        padding-top: 40px;
+        text-align: center;
+        position: relative;
+        color: white;
+    }
+
+    header img {
+        width: 140px;
+        height: auto;
+    }
+
+    #wave {
+        margin-top: -5px;
+        display: block;
+        width: 100%;
+        height: 90px;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    select {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #0b4da1;
+        font-size: 16px;
+        margin-bottom: 20px;
+        background: white;
+    }
+
+    .chart-box {
+        background: white;
+        margin: 25px 0;
+        padding: 18px;
+        border-radius: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    canvas {
+        width: 100%;
+        height: 350px;
+    }
+</style>
+
+</head>
+<body>
+
+<header>
+    <!-- Cambia el SRC por tu logo -->
+    <img src="./flouLogo.png" alt="Flou Logo">
+    <svg id="wave"></svg>
+</header>
+
+<div class="container">
+    <h1 style="text-align:center;">Dashboard de Ventas — Flou 💙</h1>
+
+    <label>Filtrar por categoría:</label>
+    <select id="categoryFilter">
+        <option value="all">Todas</option>
+    </select>
+
+    <div class="chart-box">
+        <canvas id="chartVentasMes"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <canvas id="chartCategorias"></canvas>
+    </div>
+
+    <div class="chart-box">
+        <canvas id="chartProductos"></canvas>
+    </div>
+</div>
+
+<!-- Librerías -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wavify/wavify.min.js"></script>
+
+<script>
+    const categoryMap = {
+        "Flouness Basic": "Suscripción",
+        "Flouness Team": "Suscripción",
+        "Flouness Business": "Suscripción",
+        "Flouness Enterprise": "Suscripción",
+        "Flouness Onboarding Pack": "Servicios",
+        "Flouness Data Insights": "Add-on",
+        "Flouness Storage Pro": "Add-on",
+        "Flouness Branding White Label": "Servicios",
+        "Flouness Integrations Hub": "Add-on",
+        "Consultoría Flujo Perfecto": "Servicios"
+    };
+
+    let rawData = [];
+    let charts = [];
+
+    // Wave animada del header
+    window.onload = () => {
+        wavify(document.querySelector('#wave'), {
+            height: 60,
+            bones: 8,
+            amplitude: 35,
+            color: '#f2f8ff',
+            speed: .22
+        });
+    };
+
+    // Cargar CSV
+    fetch('./flouness_ventas_anuales.csv')
+        .then(res => {
+            if (!res.ok) throw new Error("CSV no encontrado");
+            return res.text();
+        })
+        .then(text => {
+            rawData = parseCSV(text);
+            setupUI();
+            updateCharts();
+        })
+        .catch(err => alert("❌ Error cargando CSV: " + err));
+
+    function parseCSV(csv) {
+        const lines = csv.trim().split("\n").slice(1);
+        return lines.map(l => {
+            const [Mes, Producto, Ventas] = l.split(",");
+            return {
+                Mes, Producto,
+                Ventas: Number(Ventas),
+                Categoria: categoryMap[Producto]
+            };
+        });
+    }
+
+    function setupUI() {
+        const categories = [...new Set(Object.values(categoryMap))];
+        const filter = document.getElementById("categoryFilter");
+        categories.forEach(cat => {
+            filter.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+        filter.addEventListener("change", updateCharts);
+    }
+
+    function updateCharts() {
+        const selected = document.getElementById("categoryFilter").value;
+        const filtered = selected === "all"
+            ? rawData
+            : rawData.filter(r => r.Categoria === selected);
+
+        destroyCharts();
+
+        drawMonthlyLine(filtered);
+        drawCategoryBar(filtered);
+        drawProductPie(filtered);
+    }
+
+    function destroyCharts() {
+        charts.forEach(c => c.destroy());
+        charts = [];
+    }
+
+    function drawMonthlyLine(data) {
+        const monthly = {};
+        data.forEach(r => monthly[r.Mes] = (monthly[r.Mes] || 0) + r.Ventas);
+
+        charts.push(new Chart(document.getElementById("chartVentasMes"), {
+            type: 'line',
+            data: {
+                labels: Object.keys(monthly),
+                datasets: [{
+                    label: 'Ventas Mensuales',
+                    data: Object.values(monthly),
+                    tension: 0.45,
+                    borderColor: "#0b4da1",
+                    backgroundColor: "rgba(15,125,232,0.25)",
+                    fill: true
+                }]
+            }
+        }));
+    }
+
+    function drawCategoryBar(data) {
+        const totals = {};
+        data.forEach(r => totals[r.Categoria] = (totals[r.Categoria] || 0) + r.Ventas);
+
+        charts.push(new Chart(document.getElementById("chartCategorias"), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(totals),
+                datasets: [{
+                    label: 'Ventas por Categoría',
+                    data: Object.values(totals),
+                    backgroundColor: "rgba(11,77,161,0.7)"
+                }]
+            }
+        }));
+    }
+
+    function drawProductPie(data) {
+        const totals = {};
+        data.forEach(r => totals[r.Producto] = (totals[r.Producto] || 0) + r.Ventas);
+
+        charts.push(new Chart(document.getElementById("chartProductos"), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(totals),
+                datasets: [{
+                    label: 'Ventas por Producto',
+                    data: Object.values(totals),
+                    backgroundColor: [
+                        "#0b4da1", "#0f7de8", "#6fb6ff",
+                        "#4a95e6", "#1c65b8", "#3e89db",
+                        "#88c8ff", "#2a78c9", "#0d57ac", "#56a3ec"
+                    ]
+                }]
+            }
+        }));
+    }
+
+</script>
+</body>
+</html>
