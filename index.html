@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Flou Dashboard</title>
 
 <style>
@@ -17,45 +17,58 @@
     /* HEADER */
     header {
         width: 100%;
-        background: #FFFFFF;
-        padding: 25px 40px;
+        background: white;
+        padding: 22px 40px;
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 18px;
         position: relative;
+        z-index: 3;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
     }
 
     header img {
-        width: 70px;
+        width: 65px;
         height: auto;
     }
 
     header h1 {
         font-size: 38px;
         font-weight: 800;
+        margin: 0;
         color: #06345F;
     }
 
-    /* WAVE SVG */
-    #wave {
-        position: absolute;
-        bottom: -2px;
-        left: 0;
+    /* WAVES */
+    .wave-container {
         width: 100%;
-        height: 120px;
+        height: 140px;
+        overflow: hidden;
+        position: relative;
+        top: -2px;
+        z-index: 2;
+    }
+
+    svg {
+        display: block;
+        width: 100%;
+        height: 120%;
     }
 
     /* CATEGORY PANEL */
     .category-panel {
-        position: absolute;
-        top: 130px;
-        right: 50px;
+        margin-top: 20px;
+        margin-right: 50px;
         background: #0C4BA5;
-        padding: 15px 18px;
-        border-radius: 12px;
+        padding: 16px;
+        border-radius: 15px;
         color: white;
-        width: 150px;
+        width: 165px;
         box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+        position: absolute;
+        right: 40px;
+        top: 145px;
+        animation: fadeIn 0.8s ease-out;
     }
 
     .category-panel h3 {
@@ -77,25 +90,28 @@
 
     .category-panel div:hover {
         background: #5CB8FF;
+        transform: scale(1.05);
     }
 
-    /* MAIN CONTENT */
+    /* MAIN LAYOUT */
     .main {
-        margin-top: 140px;
+        margin-top: 130px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        animation: fadeIn 1s ease-out;
     }
 
     .graph-title {
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 700;
         margin-bottom: 20px;
         color: white;
         text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        animation: slideDown 0.6s ease-out;
     }
 
-    /* GRAPH CARD */
+    /* CHART CARD */
     .graph-wrapper {
         background: white;
         padding: 35px;
@@ -103,16 +119,20 @@
         box-shadow: 0 10px 20px rgba(0,0,0,0.20);
         width: 900px;
         max-width: 90%;
+        min-height: 480px;
         position: relative;
         border: 6px solid #0B51A6;
+        animation: fadeUp 0.8s ease-out;
+        display: flex;
+        align-items: center;
     }
 
     canvas {
         width: 100% !important;
-        height: 360px !important;
+        height: 400px !important;
     }
 
-    /* SLIDER BUTTONS */
+    /* BUTTONS */
     .slider-btn {
         position: absolute;
         top: 50%;
@@ -125,198 +145,143 @@
         justify-content: center;
         align-items: center;
         cursor: pointer;
-        transition: 0.3s;
+        transition: 0.25s;
         box-shadow: 0 6px 14px rgba(0,0,0,0.25);
     }
-
     .slider-btn:hover {
+        transform: translateY(-50%) scale(1.1);
         background: #0D6FE0;
     }
-
-    #prevBtn {
-        left: -100px;
-    }
-    #nextBtn {
-        right: -100px;
-    }
+    #prevBtn { left: -85px; }
+    #nextBtn { right: -85px; }
 
     .slider-btn span {
         font-size: 30px;
         color: white;
         pointer-events: none;
     }
-</style>
 
+    .bottom-pad { height: 120px; }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    @keyframes fadeUp { from {opacity:0; transform:translateY(30px);} to {opacity:1; transform:translateY(0);} }
+    @keyframes slideDown { from {opacity:0; transform:translateY(-25px);} to {opacity:1; transform:translateY(0);} }
+</style>
 </head>
+
 <body>
 
 <header>
-    <img src="flouLogo.png">
+    <img src="./flouLogo.png" alt="Flou Logo">
     <h1>Dashboard</h1>
-    <svg id="wave"></svg>
 </header>
 
-<!-- PANEL CATEGORÍAS -->
+<!-- WAVES -->
+<div class="wave-container">
+<svg viewBox="0 0 1440 320"><path fill="#83C7FF" d="M0,32L60,32C120,32,240,32,360,48C480,64,600,96,720,133.3C840,171,960,213,1080,202.7C1200,192,1320,128,1380,96L1440,64L1440,0L0,0Z"></path></svg>
+</div>
+
+<!-- CATEGORY FILTER -->
 <div class="category-panel">
-    <h3>Categories</h3>
-    <div data-cat="all">All</div>
-    <div data-cat="Suscripción">Subscriptions</div>
-    <div data-cat="Servicios">Services</div>
-    <div data-cat="Add-on">Add-ons</div>
+    <h3>Categorías</h3>
+    <div onclick="setFilter('all')">All</div>
+    <div onclick="setFilter('Suscripción')">Subscriptions</div>
+    <div onclick="setFilter('Servicios')">Services</div>
+    <div onclick="setFilter('Add-on')">Add-ons</div>
 </div>
 
 <div class="main">
-    <div class="graph-title" id="graphTitle">Ventas Mensuales</div>
+    <div class="graph-title" id="graphTitle">Ventas por Categoría</div>
 
     <div class="graph-wrapper">
         <div id="prevBtn" class="slider-btn"><span>&lt;</span></div>
-        <canvas id="chartArea"></canvas>
+        <canvas id="chart"></canvas>
         <div id="nextBtn" class="slider-btn"><span>&gt;</span></div>
     </div>
 </div>
 
+<div class="bottom-pad"></div>
 
-<!-- LIBRERÍAS -->
+<!-- LIBS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/wavify/wavify.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.10.4/dist/gsap.min.js"></script>
-
 
 <script>
-/* --------------------------- WAVE FIX ---------------------------- */
-wavify(document.querySelector('#wave'), {
-    height: 100,
-    bones: 6,
-    amplitude: 55,
-    color: "#5EB7FF",
-    speed: 0.20
+/* ------------ DATA & CATEGORY MAP ------------ */
+const categoryMap = {
+    "Flouness Basic": "Suscripción",
+    "Flouness Team": "Suscripción",
+    "Flouness Business": "Suscripción",
+    "Flouness Enterprise": "Suscripción",
+    "Flouness Onboarding Pack": "Servicios",
+    "Flouness Data Insights": "Add-on",
+    "Flouness Storage Pro": "Add-on",
+    "Flouness Branding White Label": "Servicios",
+    "Flouness Integrations Hub": "Add-on",
+    "Consultoría Flujo Perfecto": "Servicios"
+};
+
+let rawData = [];
+let currentGraph = 0;
+let chart;
+let filterSelected = "all";
+
+/* ------------ LOAD CSV ------------ */
+fetch('./flouness_ventas_anuales.csv')
+.then(res=>res.text())
+.then(text=>{
+    rawData=parseCSV(text);
+    updateChart();
 });
 
-
-/* --------------------------- LOAD CSV ---------------------------- */
-let rawData = [];
-let currentIndex = 0;
-let charts = [];
-
-const graphTitles = [
-    "Ventas Mensuales",
-    "Ventas por Categoría",
-    "Ventas por Producto"
-];
-
-fetch("flouness_ventas_anuales.csv")
-    .then(r => r.text())
-    .then(t => {
-        rawData = parseCSV(t);
-        createChart(0);
-    });
-
-
-function parseCSV(csv) {
+/* ------------ PARSE CSV ------------ */
+function parseCSV(csv){
     const lines = csv.trim().split("\n").slice(1);
-    return lines.map(line => {
-        const [Mes, Producto, Ventas] = line.split(",");
-        return { Mes, Producto, Ventas: Number(Ventas) };
+    return lines.map(l=>{
+        const [Mes,Producto,Ventas]=l.split(",");
+        return {Mes,Producto,Ventas:Number(Ventas),Categoria:categoryMap[Producto]};
     });
 }
 
-
-/* --------------------------- GRAPH SLIDER ---------------------------- */
-document.getElementById("nextBtn").onclick = () => {
-    currentIndex = (currentIndex + 1) % 3;
-    createChart(currentIndex);
-};
-
-document.getElementById("prevBtn").onclick = () => {
-    currentIndex = (currentIndex - 1 + 3) % 3;
-    createChart(currentIndex);
-};
-
-
-/* --------------------------- CHART ENGINE ---------------------------- */
-function createChart(index) {
-    if (charts[0]) charts[0].destroy();
-
-    document.getElementById("graphTitle").innerText = graphTitles[index];
-
-    const ctx = document.getElementById("chartArea");
-
-    if (index === 0) drawMonthly(ctx);
-    if (index === 1) drawCategory(ctx);
-    if (index === 2) drawProducts(ctx);
+/* ------------ FILTER ------------ */
+function setFilter(type){
+    filterSelected = type;
+    updateChart();
 }
 
-function drawMonthly(ctx) {
-    const monthly = {};
+/* ------------ GRAPH DATA ----------- */
+function getFiltered(){
+    return filterSelected==="all"?rawData:rawData.filter(r=>r.Categoria===filterSelected);
+}
 
-    rawData.forEach(r => monthly[r.Mes] = (monthly[r.Mes] || 0) + r.Ventas);
+/* ------------ CHART DRAWING ---------- */
+function updateChart(){
+    const data = getFiltered();
+    const labels={};  
+    data.forEach(r => labels[r.Categoria] = (labels[r.Categoria]||0)+r.Ventas);
 
-    charts[0] = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: Object.keys(monthly),
-            datasets: [{
-                label: "Ventas",
-                data: Object.values(monthly),
-                tension: 0.45,
-                borderColor: "#0A59C8",
-                backgroundColor: "rgba(85,180,255,0.28)",
-                fill: true
+    const ctx = document.getElementById("chart");
+    if(chart) chart.destroy();
+
+    chart=new Chart(ctx,{
+        type:'bar',
+        data:{
+            labels:Object.keys(labels),
+            datasets:[{
+                label:'Ventas',
+                data:Object.values(labels),
+                backgroundColor:"#0A59C8"
             }]
         }
     });
+
+    document.getElementById("graphTitle").innerText="Ventas por Categoría";
 }
 
-function drawCategory(ctx) {
-    const totals = {};
-    rawData.forEach(r => {
-        const cat = categorize(r.Producto);
-        totals[cat] = (totals[cat] || 0) + r.Ventas;
-    });
-
-    charts[0] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(totals),
-            datasets: [{
-                label: "Ventas",
-                data: Object.values(totals),
-                backgroundColor: "#0A59C8"
-            }]
-        }
-    });
-}
-
-function drawProducts(ctx) {
-    const totals = {};
-    rawData.forEach(r => totals[r.Producto] = (totals[r.Producto] || 0) + r.Ventas);
-
-    charts[0] = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: Object.keys(totals),
-            datasets: [{
-                data: Object.values(totals),
-                backgroundColor: [
-                    "#0A59C8","#1D73E5","#4AA3FF","#7BC8FF",
-                    "#0F4DA1","#63B5FF","#1C6ED3","#A9DDFF"
-                ]
-            }]
-        }
-    });
-}
-
-
-/* --------------------------- CATEGORY MAP ---------------------------- */
-function categorize(product) {
-    if (product.includes("Basic") || product.includes("Team") || product.includes("Business") || product.includes("Enterprise"))
-        return "Suscripción";
-    if (product.includes("Onboarding") || product.includes("Consultoría") || product.includes("Branding"))
-        return "Servicios";
-    return "Add-on";
-}
+/* -------- BUTTONS (future graphs) -----*/
+document.getElementById("prevBtn").onclick=()=>{};
+document.getElementById("nextBtn").onclick=()=>{};
 </script>
 
 </body>
 </html>
-
